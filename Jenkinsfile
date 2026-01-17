@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        BASE_URL = credentials('app-login-url')  // URL secret text is OK here
+        BASE_URL = credentials('app-login-url')  // Secret text
     }
 
     stages {
@@ -14,23 +14,22 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm ci'
+                bat 'npm ci'
             }
         }
 
         stage('Install Playwright Browsers') {
             steps {
-                sh 'npx playwright install --with-deps'
+                bat 'npx playwright install --with-deps'
             }
         }
 
         stage('Run Tests') {
             steps {
-                // Inject username/password only for this stage
                 withCredentials([usernamePassword(credentialsId: 'app-login-creds', 
                                                  usernameVariable: 'APP_USERNAME', 
                                                  passwordVariable: 'APP_PASSWORD')]) {
-                    sh 'npx playwright test'
+                    bat 'npx playwright test'
                 }
             }
         }
@@ -38,6 +37,7 @@ pipeline {
 
     post {
         always {
+            // Only works if HTML Publisher Plugin is installed
             publishHTML(target: [
                 allowMissing: false,
                 alwaysLinkToLastBuild: true,
