@@ -1,48 +1,43 @@
 pipeline {
-    agent {
-        docker {
-            image 'nileshrahinj0211/pw-ui-automation-testing01:latest'
-            args '-u root' // optional if permissions required
-        }
-    }
+    agent any
 
     environment {
-        BASE_URL = credentials('app-login-url')  // Secret text
+        BASE_URL = credentials('app-login-url')
+        IMAGE_NAME = 'nileshrahinj0211/pw-ui-automation-testing01:latest'
     }
 
     stages {
-        stage('Run Tests') {
+
+        stage('Pull Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'app-login-creds', 
-                                                 usernameVariable: 'APP_USERNAME', 
-                                                 passwordVariable: 'APP_PASSWORD')]) {
-                    sh 'npx playwright test'
+                bat 'docker pull %IMAGE_NAME%'
+            }
+        }
+
+        stage('Run Playwright Tests') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'app-login-creds',
+                        usernameVariable: 'APP_USERNAME',
+                        passwordVariable: 'APP_PASSWORD'
+                    )
+                ]) {
+                    bat '''
+                    docker run --rm ^
+                      -e BASE_URL=%BASE_URL% ^
+                      -e APP_USERNAME=%APP_USERNAME% ^
+                      -e APP_PASSWORD=%APP_PASSWORD% ^
+                      %IMAGE_NAME%
+                    '''
                 }
             }
         }
+    }
 
-        stage('Publish HTML Report') {
-            steps {
-                publishHTML(target: [
-                    allowMissing: false,
-                    alwaysLinkToLastBuild: true,
-                    keepAll: true,
-                    reportDir: 'playwright-report',
-                    reportFiles: 'index.html',
-                    reportName: 'Playwright HTML Report'
-                ])
-            }
-        }
-
-        stage('Publish Allure Report') {
-            steps {
-                allure([
-                    includeProperties: false,
-                    jdk: '',
-                    results: [[path: 'allure-results']],
-                    reportBuildPolicy: 'ALWAYS'
-                ])
-            }
+    post {
+        always {
+            echo "Pipeline finished"
         }
     }
 }
