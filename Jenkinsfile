@@ -2,9 +2,7 @@ pipeline {
     agent any
 
     environment {
-        BASE_URL = credentials('app-login-url')                   // URL secret text
-        APP_USERNAME = credentials('app-login-creds').username    // username from username/password
-        APP_PASSWORD = credentials('app-login-creds').password    // password from username/password
+        BASE_URL = credentials('app-login-url')  // URL secret text is OK here
     }
 
     stages {
@@ -28,7 +26,12 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh 'npx playwright test'
+                // Inject username/password only for this stage
+                withCredentials([usernamePassword(credentialsId: 'app-login-creds', 
+                                                 usernameVariable: 'APP_USERNAME', 
+                                                 passwordVariable: 'APP_PASSWORD')]) {
+                    sh 'npx playwright test'
+                }
             }
         }
     }
