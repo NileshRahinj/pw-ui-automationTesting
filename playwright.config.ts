@@ -9,9 +9,10 @@ export default defineConfig({
   timeout: 100 * 1000,
 
   reporter: [
-    ['list'],
-    ['allure-playwright']
-  ],
+  ['list'], // keep console output
+  ['html', { outputFolder: 'playwright-report', open: 'never' }], // HTML report for Jenkins
+  ['allure-playwright', { outputFolder: 'allure-results' }] // optional, keep Allure if you use it
+],
 
   use: {
     baseURL: process.env.BASE_URL,
