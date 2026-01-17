@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../src/pages/LoginPage';
 
-test('OrangeHRM Dashboard Flow: ', async ({ page }) => {
+test('TC01: OrangeHRM Dashboard Flow: ', async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.goto();
   await loginPage.login();
