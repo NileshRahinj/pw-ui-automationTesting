@@ -1,10 +1,16 @@
 pipeline {
     agent any
 
+    environment {
+        BASE_URL = credentials('app-login-url')                   // URL secret text
+        APP_USERNAME = credentials('app-login-creds').username    // username from username/password
+        APP_PASSWORD = credentials('app-login-creds').password    // password from username/password
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/your-repo/pw-ui-automationTesting.git'
+                git branch: 'main', url: 'https://github.com/NileshRahinj/pw-ui-automationTesting'
             }
         }
 
